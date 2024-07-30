@@ -17,12 +17,14 @@ fi
 URL=$1
 
 # Set Headers Doctor API endpoint
-# API_ENDPOINT="https://api.headers.doctor/"
-API_ENDPOINT="http://localhost:8000/results/scores"
+API_DOMAIN="https://api.headers.doctor"
+# API_DOMAIN="http://localhost:8000"
+ROOT_URL="/results/scores"
 
 # Make the API request
-curl -X 'POST' \
-  "$API_ENDPOINT" \
+echo "Scanning $URL..."
+RESPONSE=$(curl -s -X 'POST' \
+  "$API_DOMAIN$ROOT_URL" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -31,7 +33,8 @@ curl -X 'POST' \
   "port": 0,
   "redirects": false,
   "date": "'"$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")"'"
-}'
+  }'
+)
 
 # Check if the request was successful
 if [ $? -ne 0 ]; then
@@ -40,7 +43,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # Parse the response to get the header score
-HEADER_SCORE=$(echo $RESPONSE | jq -r '.headerScore')
+HEADER_SCORE=$(echo $RESPONSE | jq -r '.security_score')
+DATE_SCAN=$(echo $RESPONSE | jq -r '.date')
 
 # Check if jq parsing was successful
 if [ $? -ne 0 ]; then
@@ -52,4 +56,5 @@ fi
 echo "Header Score for $URL: $HEADER_SCORE"
 
 # Provide a link to the public Headers Doctor results page
-echo "Check detailed results at: https://headers.doctor/?url=$(echo $URL | sed 's|https://||')"
+URL=$(echo $URL | sed 's|https://||')
+echo "Check detailed results at: $API_DOMAIN/results/$URL/$DATE_SCAN?descriptions=true&security=true"
