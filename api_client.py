@@ -11,16 +11,23 @@ class HeadersDoctorClient:
 
     def check_headers(self, url: str):
         try:
-            request_id = requests.post(f"{self.BASE_URL}/results/scan-hostname", headers=self.headers, params={"hostname": url})
-            request_id = request_id.json()['id_request']
+            # Send the request and get the request id
+            request_response = requests.post(f"{self.BASE_URL}/results/scan-hostname", headers=self.headers, params={"hostname": url})
+            request_response.raise_for_status()
+            request_id = request_response.json()['scan_id']
+
+            # Get the results using the request id
             loop = True
             while loop:
                 response = requests.get(f"{self.BASE_URL}/results/get_result/{request_id}", headers=self.headers)
+                response.raise_for_status() 
                 response = response.json()
-                if 'No result founded.' in response['message']:
-                    loop=False
-                    return response
+                if isinstance(response, list):
+                    response = response[0]
+                    if "scan_id" in response:
+                        loop = False
             return response
+
         except requests.exceptions.HTTPError as err:
             if err.response.status_code == 404:
                 return {"error": "Hostname not found"}
@@ -29,7 +36,7 @@ class HeadersDoctorClient:
 
     def check_csp(self, url: str):
         try:
-            response = requests.get(f"{self.BASE_URL}/csp", headers=self.headers, params={"url": url})
+            response = requests.get(f"{self.BASE_URL}/csp", headers=self.headers, params={"url": url})  
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as err:
@@ -51,6 +58,6 @@ class HeadersDoctorClient:
 
 test = HeadersDoctorClient()
 print(test.check_headers("https://www.google.com"))
-print(test.check_csp("https://www.google.com"))
-print(test.owasp_compliance("https://www.google.com"))
+# print(test.check_csp("https://www.google.com"))
+# print(test.owasp_compliance("https://www.google.com"))
 
