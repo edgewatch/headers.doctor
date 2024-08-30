@@ -3,6 +3,7 @@ import requests
 class HeadersDoctorClient:
     # BASE_URL = "https://api.headers.doctor/api/v1"
     BASE_URL = "http://localhost:8000"
+    results = {}
 
     def __init__(self):
         self.headers = {
@@ -26,6 +27,7 @@ class HeadersDoctorClient:
                     response = response[0]
                     if "scan_id" in response:
                         loop = False
+                        self.results = response
             return response
 
         except requests.exceptions.HTTPError as err:
@@ -33,7 +35,10 @@ class HeadersDoctorClient:
                 return {"error": "Hostname not found"}
             else:
                 raise err
-
+    
+    def get_results(self):
+        return self.results
+            
     def check_csp(self, url: str):
         try:
             response = requests.get(f"{self.BASE_URL}/csp", headers=self.headers, params={"url": url})  
