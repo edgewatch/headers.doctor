@@ -11,9 +11,10 @@
       "request": "launch",
       "program": "${workspaceFolder}/scan_headers.py",
       // "args": ["https://google.com", "-p", "443"],
-      "args": ["-f", "/home/gsingh/Descargas/domains.es.1000.txt", "-s", "${workspaceFolder}/scans", "-p", "443", "--save_temp"],
+      // "args": ["-f", "/home/gsingh/Descargas/domains.es.1000.txt", "-s", "${workspaceFolder}/scans", "-p", "443", "--save_temp"],
       // "args": ["-u", "gurjant.eu", "-s", "${workspaceFolder}/scans"],
       // "args": ["--get_result_from_uuid", "64ebc996-ad53-41d1-bbfb-24c00f85177f", "-s", "${workspaceFolder}/scans"],
+      "args": ["--get_result_from_file", "temp_2024_09_02T15_53_59/uuids.txt", "-s", "/home/gsingh/Documentos/headers.doctor/scans"],
       "console": "integratedTerminal"
     }
   ]

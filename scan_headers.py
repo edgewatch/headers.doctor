@@ -25,8 +25,8 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-# API_HEADERS_DOCTOR = "http://localhost:8000"
-API_HEADERS_DOCTOR = "https://api.dev.headers.doctor"
+API_HEADERS_DOCTOR = "http://localhost:8000"
+# API_HEADERS_DOCTOR = "https://api.dev.headers.doctor"
 
 def save_uuid(uuid: str, port:int, temp: str):
     """
@@ -279,7 +279,7 @@ async def scan_file(file_path: str, temp:str, port: int = None):
             else:
                 with_port(url, port)
                 
-async def get_result(path: str=None, uuid: str=None, temp: str=None) -> None:
+async def get_result(path: str=None, uuid: str=None, temp: str=None, uuid_file: str=None) -> None:
     """
     Gets the result of a scan from the API.
 
@@ -311,6 +311,32 @@ async def get_result(path: str=None, uuid: str=None, temp: str=None) -> None:
                             print(response.json())
                     else:
                         response = None
+        elif uuid_file:
+            with open(uuid_file, "r+") as file:
+                lines = file.readlines()
+                for line in lines:
+                    are_results_ready = True
+                    line = line.strip()
+                    uuid = line.split(":")[0]
+                    port = line.split(":")[1]
+
+                    while are_results_ready:
+                        response = requests.get(
+                            f"{API_HEADERS_DOCTOR}/results/get_result/{uuid}",
+                            headers={"Accept": "application/json"}
+                        )
+                        if response.status_code == 200:
+                            if response.json():
+                                if path:
+                                    write_response(response.json(), temp=temp, path=path)
+                                    are_results_ready = False
+                                else:
+                                    print(response.json())
+                                    are_results_ready = False
+                            else:
+                                are_results_ready = True
+                        else:
+                            are_results_ready = False
         else:
             with open(f"{temp}/uuids.txt", "r+") as file:
                 lines = file.readlines()
@@ -361,7 +387,7 @@ def create_temp():
     try:
         logger = logging.getLogger(__name__)
         today = datetime.datetime.now()
-        date_string = today.strftime('%Y-%m-%dT%H:%M:%S')
+        date_string = today.strftime('%Y_%m_%dT%H_%M_%S')
         if not os.path.exists(f"temp_{date_string}"):
             os.makedirs(f"temp_{date_string}")
         return f"temp_{date_string}"
@@ -398,9 +424,13 @@ async def main():
     parser.add_argument('-f', '--file', type=str, help='File with list of urls to scan.', required=False)
     parser.add_argument('-s', '--save_response_to_file', help='if this param is given, scan_headers will save all the results in your_directory/results/url/url_port.json else it only print the results.', required=False)
     parser.add_argument('--save_temp', action='store_true', help='if this param is given, scan_headers will save all the temp files.', required=False)
-    parser.add_argument('--get_result_from_file', action='store_true', help='if this param is given, scan_headers will get all the results from temp/uuids.txt', required=False)
+    parser.add_argument('--get_result_from_file', help='if this param is given, scan_headers will get all the results from temp/uuids.txt', required=False)
     parser.add_argument('--get_result_from_uuid', type=str, help='if this param is given, scan_headers will get the result from the uuid given.', required=False)
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except Exception as e:
+        logger.error(f"Error parsing arguments: {e}")
+        raise e
 
     print(f"""
         Scanning:
@@ -428,7 +458,7 @@ async def main():
         
         if args.get_result_from_file:
             if args.save_response_to_file:
-                await asyncio.gather(get_result(uuid=args.get_result_from_file, path=args.save_response_to_file, temp=temp_dir))
+                await asyncio.gather(get_result(path=args.save_response_to_file, uuid_file=args.get_result_from_file, temp=temp_dir))
             else:
                 await asyncio.gather(get_result(uuid=args.get_result_from_uuid))
         elif args.get_result_from_uuid:
