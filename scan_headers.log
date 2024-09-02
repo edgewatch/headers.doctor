@@ -1,0 +1,42 @@
+2024-09-02 10:50:47,212 - __main__ - INFO - Scan finished for gurjant.eu:None
+2024-09-02 10:50:47,212 - __main__ - ERROR - Error: 'url'
+2024-09-02 10:52:20,467 - __main__ - INFO - Scan finished for gurjant.eu:None
+2024-09-02 10:52:20,467 - __main__ - ERROR - Error: 'url'
+2024-09-02 10:53:35,547 - scan_headers         - INFO - Scan finished for gurjant.eu:None
+2024-09-02 10:53:35,547 - scan_headers         - ERROR - Error: 'url'
+2024-09-02 10:54:03,138 - scan_url             - INFO - Scan finished for gurjant.eu:None
+2024-09-02 10:54:03,139 - save_scan_result     - ERROR - Error: 'url'
+2024-09-02 10:54:19,314 - scan_url - INFO - Scan finished for gurjant.eu:None
+2024-09-02 10:54:19,314 - save_scan_result - ERROR - Error: 'url'
+INFO - 2024-09-02 10:55:30,413 - scan_url - Scan finished for gurjant.eu:None
+ERROR - 2024-09-02 10:55:30,413 - save_scan_result - Error: 'url'
+ INFO - 2024-09-02 10:55:45,559 - scan_url - Scan finished for gurjant.eu:None
+ERROR - 2024-09-02 10:55:45,559 - save_scan_result - Error: 'url'
+INFO - 2024-09-02 10:55:53,286 - scan_url - Scan finished for gurjant.eu:None
+ERROR - 2024-09-02 10:55:53,286 - save_scan_result - Error: 'url'
+INFO - 2024-09-02 10:56:16,330 - scan_url - Scan finished for gurjant.eu:None
+ERROR - 2024-09-02 10:56:16,330 - save_scan_result - Error: 'url'
+      INFO - 2024-09-02 10:56:23,887 - scan_url - Scan finished for gurjant.eu:None
+     ERROR - 2024-09-02 10:56:23,887 - save_scan_result - Error: 'url'
+ INFO - 2024-09-02 10:56:31,560 - scan_url - Scan finished for gurjant.eu:None
+ERROR - 2024-09-02 10:56:31,560 - save_scan_result - Error: 'url'
+ INFO - 2024-09-02 10:56:51,414 - scan_url: Scan finished for gurjant.eu:None
+ERROR - 2024-09-02 10:56:51,414 - save_scan_result: Error: 'url'
+ INFO - 2024-09-02 10:57:08,750 -   scan_url: Scan finished for gurjant.eu:None
+ERROR - 2024-09-02 10:57:08,750 - save_scan_result: Error: 'url'
+ INFO 2024-09-02 10:57:29,409 scan_url Scan finished for gurjant.eu:None
+ERROR 2024-09-02 10:57:29,410 save_scan_result Error: 'url'
+INFO 2024-09-02 10:57:45,806 scan_url Scan finished for gurjant.eu:None
+ERROR 2024-09-02 10:57:45,807 save_scan_result Error: 'url'
+INFO 2024-09-02 10:57:52,419 scan_url Scan finished for gurjant.eu:None
+ERROR 2024-09-02 10:57:52,419 save_scan_result Error: 'url'
+INFO                            2024-09-02 10:57:58,927 scan_url Scan finished for gurjant.eu:None
+ERROR                            2024-09-02 10:57:58,928 save_scan_result Error: 'url'
+INFO 2024-09-02 10:58:09,426 scan_url Scan finished for gurjant.eu:None
+ERROR 2024-09-02 10:58:09,427 save_scan_result Error: 'url'
+INFO 2024-09-02 10:59:53,050 scan_url Scan finished for gurjant.eu:443
+ERROR 2024-09-02 10:59:53,051 save_scan_result Error: 'url'
+INFO 2024-09-02 11:01:45,199 scan_url Scan finished for gurjant.eu:443
+ERROR 2024-09-02 11:01:45,200 save_scan_result Error: 'url'
+INFO 2024-09-02 11:02:19,728 scan_url Scan finished for gurjant.eu:443
+ERROR 2024-09-02 11:02:48,632 save_scan_result Error: 'url'

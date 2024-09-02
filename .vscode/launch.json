@@ -11,7 +11,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/scan_headers.py",
       // "args": ["https://google.com", "-p", "443"],
-      "args": ["-f", "/home/gsingh/Descargas/domains.es.5.txt", "-s", "${workspaceFolder}/elpepe", "-p", "443"],
+      // "args": ["-f", "/home/gsingh/Descargas/domains.es.5.txt", "-s", "${workspaceFolder}/elpepe", "-p", "443", "--save_temp"],
+      "args": ["-u", "gurjant.eu", "-s", "${workspaceFolder}/scans"],
       "console": "integratedTerminal"
     }
   ]
