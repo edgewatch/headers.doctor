@@ -16,7 +16,7 @@ ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 
 # create a formatter and set the formatter for the handlers
-formatter = logging.Formatter('%(levelname)s %(asctime)10s %(funcName)s %(message)s')
+formatter = logging.Formatter('LEVEL: %(levelname)s %(asctime)s %(funcName)s %(message)s', datefmt='%d-%b-%Y %H:%M:%S')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 
@@ -287,6 +287,8 @@ async def get_result(path: str, uuid: str = None, save: bool = False) -> None:
         uuid (str): The UUID of the scan. If not provided, the function will
             get the UUIDs from the file 'temp/uuids.txt' and get the results
             for all of them.
+        save (bool): If True, the result will be saved to a file in the
+            given path. Defaults to False.
 
     Returns:
         None
@@ -333,7 +335,6 @@ async def get_result(path: str, uuid: str = None, save: bool = False) -> None:
         logger.error(f"Error: {e}")
     return None
     
-
 def create_temp():
     """
     Creates a directory named 'temp' if it does not exist.
