@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import requests
@@ -24,10 +25,10 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-API_HEADERS_DOCTOR = "http://localhost:8000"
-# API_HEADERS_DOCTOR = "https://api.dev.headers.doctor"
+# API_HEADERS_DOCTOR = "http://localhost:8000"
+API_HEADERS_DOCTOR = "https://api.dev.headers.doctor"
 
-def save_uuid(uuid: str, port:int):
+def save_uuid(uuid: str, port:int, temp: str):
     """
     Saves a given UUID and port to a file named 'uuids.txt' in the 'temp' directory.
 
@@ -40,14 +41,14 @@ def save_uuid(uuid: str, port:int):
     """
     try:
         logger = logging.getLogger(__name__)
-        with open("temp/uuids.txt", "a") as f:
+        with open(f"{temp}/uuids.txt", "a") as f:
             f.write(f"{uuid}:{port}\n")
     except FileNotFoundError as e:
         logger.error(f"Error: {e}")
     except Exception as e:
         logger.error(f"Error: {e}")
         
-def save_not_valid_url(url: str, port: int):
+def save_not_valid_url(url: str, port: int, temp: str):
     """
     Saves a given URL and port to a file named 'not_valid_urls.txt' in the 'temp' directory.
 
@@ -60,7 +61,7 @@ def save_not_valid_url(url: str, port: int):
     """
     try:
         logger = logging.getLogger(__name__)
-        path = "temp/not_valid_urls.txt"
+        path = f"{temp}/not_valid_urls.txt"
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
         with open(path, "a") as f:
@@ -106,7 +107,7 @@ def save_scan_result(response: any, path: str):
     except Exception as e:
         logger.error(f"Error: {e}")
             
-def write_response(response: any, url: str = '', port: int = 0, path: str = 'scan'):
+def write_response(response: any, temp: str, url: str = '', port: int = 0, path: str = 'scan'):
     """
     Writes a response to a file based on the provided parameters.
 
@@ -123,9 +124,9 @@ def write_response(response: any, url: str = '', port: int = 0, path: str = 'sca
         save_scan_result(response, path)
     else:
         if response is not None:
-            save_uuid(response['scan_id'], port)
+            save_uuid(response['scan_id'], port, temp)
         else:
-            save_not_valid_url(url, port)
+            save_not_valid_url(url, port, temp)
 
 def scan_url(url, port):
     """
@@ -211,7 +212,7 @@ def format_url(url: str, port: int = 443) -> tuple[dict, int] | None:
     except ValueError as e:
         logger.error(f"Error: {e}")
 
-async def scan_file(file_path: str, port: int = None):
+async def scan_file(file_path: str, temp:str, port: int = None):
     """
     Scans a given file and writes the results to a file or saves them in a temporary file.
 
@@ -241,11 +242,11 @@ async def scan_file(file_path: str, port: int = None):
             port = int(url.split(":")[1])
             url = url.split(":")[0]
             response, _ = format_url(url, port)
-            write_response(response, url, port)                
+            write_response(response, temp, url, port)                
                 
         elif url.startswith("http://") or url.startswith("https://"):
             response, _port = format_url(url)
-            write_response(response, url, _port)
+            write_response(response, temp, url, _port)
         else:
             port = 443
             response, _ = format_url(url, port)
@@ -254,7 +255,7 @@ async def scan_file(file_path: str, port: int = None):
             else:
                 port = 80
                 response, _ = format_url(url, port)
-                write_response(response, url, port)
+                write_response(response, temp, url, port)
     
     def with_port(url:str, port:int):
         """
@@ -268,7 +269,7 @@ async def scan_file(file_path: str, port: int = None):
             None
         """
         response, _ = format_url(url, port)
-        write_response(response, url, port)
+        write_response(response, temp, url, port)
     
     with open(file_path, 'r') as file:
         for line in file:
@@ -278,7 +279,7 @@ async def scan_file(file_path: str, port: int = None):
             else:
                 with_port(url, port)
                 
-async def get_result(path: str, uuid: str = None, save: bool = False) -> None:
+async def get_result(path: str=None, uuid: str=None, temp: str=None) -> None:
     """
     Gets the result of a scan from the API.
 
@@ -295,34 +296,48 @@ async def get_result(path: str, uuid: str = None, save: bool = False) -> None:
     """
     try:
         logger = logging.getLogger(__name__)
-        if uuid is not None:
-            response = requests.get(
-                f"{API_HEADERS_DOCTOR}/results/get_result/{uuid}",
-                headers={"Accept": "application/json"}
-            )
-            if response.status_code == 200:
-                if response.json() is not None and save:
-                    write_response(response.json(), path=path)
-                else:
-                    print(response.json())
-        else:
-            with open("temp/uuids.txt", "r+") as file:
-                lines = file.readlines()
-                file.truncate(0)
-            
-            for line in lines:
-                line = line.strip()
-                uuid = line.split(":")[0]
-                port = line.split(":")[1]
+        response = None
+        if uuid:
+            while response is None:
                 response = requests.get(
                     f"{API_HEADERS_DOCTOR}/results/get_result/{uuid}",
                     headers={"Accept": "application/json"}
                 )
                 if response.status_code == 200:
-                    if response.json() is not None and save:
-                        write_response(response.json(), path=path)
+                    if response.json():
+                        if path:
+                            write_response(response.json(), temp=temp, path=path)
+                        else:
+                            print(response.json())
                     else:
-                        print(response.json())
+                        response = None
+        else:
+            with open(f"{temp}/uuids.txt", "r+") as file:
+                lines = file.readlines()
+                for line in lines:
+                    are_results_ready = True
+                    line = line.strip()
+                    uuid = line.split(":")[0]
+                    port = line.split(":")[1]
+
+                    while are_results_ready:
+                        response = requests.get(
+                            f"{API_HEADERS_DOCTOR}/results/get_result/{uuid}",
+                            headers={"Accept": "application/json"}
+                        )
+                        if response.status_code == 200:
+                            if response.json():
+                                if path:
+                                    write_response(response.json(), temp=temp, path=path)
+                                    are_results_ready = False
+                                else:
+                                    print(response.json())
+                                    are_results_ready = False
+                            else:
+                                are_results_ready = True
+                        else:
+                            are_results_ready = False
+                            
         # while True:
     except ValueError as e:
         logger.error(f"Error: {e}")
@@ -345,9 +360,11 @@ def create_temp():
     logger = logging.getLogger(__name__)
     try:
         logger = logging.getLogger(__name__)
-        if not os.path.exists("temp"):
-            os.makedirs("temp")
-        return "temp"
+        today = datetime.datetime.now()
+        date_string = today.strftime('%Y-%m-%dT%H:%M:%S')
+        if not os.path.exists(f"temp_{date_string}"):
+            os.makedirs(f"temp_{date_string}")
+        return f"temp_{date_string}"
     except Exception as e:
         logger.error(f"Error: {e}")
 
@@ -402,29 +419,24 @@ async def main():
         if args.scan_by_url:
             response = format_url(args.scan_by_url, args.port)
             if response is not None:
-                if args.save_response_to_file:
-                    write_response(response, path=args.save_response_to_file)
-                else:
-                    print(response.json())
+                await get_result(uuid=response[0]['scan_id'], path=args.save_response_to_file, temp=temp_dir)
             else:
                 logger.warning("Invalid URL")
                 
         elif args.file:
-            await asyncio.gather(scan_file(args.file, args.port), get_result(path=args.save_response_to_file))
+            await asyncio.gather(scan_file(args.file, temp_dir, args.port), get_result(path=args.save_response_to_file, temp=temp_dir))
         
         if args.get_result_from_file:
-            await asyncio.gather(get_result(uuid=args.get_result_from_file))
-        elif args.get_result_from_uuid:
-            await asyncio.gather(get_result(uuid=args.get_result_from_uuid))
-            
-        """ if args.file:
-            await asyncio.gather(scan_file(args.file, args.port), get_result(args.save_response_to_file))
-        elif args.scan_by_url:
-            response = format_url(args.scan_by_url, args.port)
-            if response is not None:
-                print(response)
+            if args.save_response_to_file:
+                await asyncio.gather(get_result(uuid=args.get_result_from_file, path=args.save_response_to_file, temp=temp_dir))
             else:
-                print("Invalid URL") """
+                await asyncio.gather(get_result(uuid=args.get_result_from_uuid))
+        elif args.get_result_from_uuid:
+            if args.save_response_to_file:
+                await asyncio.gather(get_result(uuid=args.get_result_from_uuid, path=args.save_response_to_file, temp=temp_dir))
+            else:
+                await asyncio.gather(get_result(uuid=args.get_result_from_uuid))
+            
     except KeyboardInterrupt:
         logger.info("Exiting gracefully")
     except Exception as e:
