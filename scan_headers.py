@@ -17,7 +17,7 @@ ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 
 # create a formatter and set the formatter for the handlers
-formatter = logging.Formatter('LEVEL: %(levelname)s %(asctime)s %(funcName)s %(message)s', datefmt='%d-%b-%Y %H:%M:%S')
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(funcName)s - %(message)s', datefmt='%d-%b-%Y %H:%M:%S')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 
@@ -25,7 +25,7 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-API_HEADERS_DOCTOR = "https://api.dev.headers.doctor"
+API_HEADERS_DOCTOR = "https://api.headers.doctor"
 
 def save_uuid(uuid: str, port:int, temp: str):
     """
@@ -142,23 +142,23 @@ def scan_url(url, port):
         logger = logging.getLogger(__name__)
         response = requests.post(
             f"{API_HEADERS_DOCTOR}/results/scan-hostname",
-            headers={"Accept": "application/json"},
+            headers={'Content-Type': 'application/json',},
             params={
                 "hostname": url,
                 "port": port
             },
         )
         if response.status_code == 200:
-            logger.info(f"Scan finished for {url}:{port}")
+            logger.info(f"Request queued for scan {url}:{port}. Status code: {response.status_code}")
             return response.json()
         else:
-            logger.error(f"Error scanning {url}:{port}. Status code: {response.status_code}")
+            logger.error(f"It was not possible to queue {url}:{port}. Status code: {response.status_code}")
             return None
     except requests.exceptions.RequestException as e:
-        logger.error(f"Error scanning {url}:{port}. Request exception: {e}")
+        logger.error(f"It was not possible to queue {url}:{port}. Request exception: {e}")
         return None
     except Exception as e:
-        logger.error(f"(scan_url) Error: {e}")
+        logger.error(f"It was not possible to queue {url}:{port}. Error: {e}")
     return None
 
 def validate_hostname(hostname: str) -> bool:
@@ -173,8 +173,13 @@ def validate_hostname(hostname: str) -> bool:
     """
     try:
         logger = logging.getLogger(__name__)
-        pattern = r"(?i)^(?:(?:https?://)?(?:([a-z0-9-]+|\*)\.)?([a-z0-9-]{1,61})\.([a-z0-9]{2,7}))?$"
-        return bool(re.match(pattern, hostname))
+        pattern1 = r"(?i)^(?:(?:https?://)?(?:([a-z0-9-]+|\*)\.)?([a-z0-9-]{1,61})\.([a-z0-9]{2,7}))?$"
+        pattern2 = r"(?i)^(?:([a-z0-9-]+|\*)\.)?([a-z0-9-]{1,61})\.([a-z0-9]{2,15})$"
+        if re.match(pattern1, hostname):
+            return True
+        if re.match(pattern2, hostname):
+            return True
+        return False
     except Exception as e:
         logger.error(f"(validate_hostname) Error: {e}")
     return False
@@ -297,6 +302,7 @@ async def get_result(path: str=None, uuid: str=None, temp: str=None, uuid_file: 
         logger = logging.getLogger(__name__)
         response = None
         if uuid:
+            logger.info(f"Getting result for {uuid}")
             while response is None:
                 response = requests.get(
                     f"{API_HEADERS_DOCTOR}/results/get_result/{uuid}",
@@ -318,7 +324,7 @@ async def get_result(path: str=None, uuid: str=None, temp: str=None, uuid_file: 
                     line = line.strip()
                     uuid = line.split(":")[0]
                     port = line.split(":")[1]
-
+                    logger.info(f"Getting result for {uuid}")
                     while are_results_ready:
                         response = requests.get(
                             f"{API_HEADERS_DOCTOR}/results/get_result/{uuid}",
@@ -346,6 +352,7 @@ async def get_result(path: str=None, uuid: str=None, temp: str=None, uuid_file: 
                     port = line.split(":")[1]
 
                     while are_results_ready:
+                        logger.info(f"Getting result for {uuid}")
                         response = requests.get(
                             f"{API_HEADERS_DOCTOR}/results/get_result/{uuid}",
                             headers={"Accept": "application/json"}
