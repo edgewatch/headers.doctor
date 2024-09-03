@@ -81,4 +81,6 @@ python scan_headers.py --get_result_from_uuid
 - The scan results are saved in JSON format.
 - The script logs events to the console and to a file named `scan_headers.log`.
 
+## License
 
+This project is licensed under the terms of the [GNU General Public License (GPL) Version 3](LICENSE).

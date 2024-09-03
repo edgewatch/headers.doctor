@@ -25,8 +25,7 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-API_HEADERS_DOCTOR = "http://localhost:8000"
-# API_HEADERS_DOCTOR = "https://api.dev.headers.doctor"
+API_HEADERS_DOCTOR = "https://api.dev.headers.doctor"
 
 def save_uuid(uuid: str, port:int, temp: str):
     """

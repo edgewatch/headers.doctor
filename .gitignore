@@ -3,3 +3,4 @@
 scans
 scans/*
 temp*
+.vscode/launch.json
